@@ -38,8 +38,10 @@
   // Like first, but for the last elements. If n is undefined, return just the
   // last element.
   _.last = function(array, n) {
-    return n === undefined ? array[array.length - 1] : array.slice(array.length - n > 0 ? array.length - n : 0);
+    const position = array.length - n > 0 ? array.length - n : 0;
+    return n === undefined ? array[array.length - 1] : array.slice(position);
    };
+
 
   // Call iterator(value, key, collection) for each element of collection.
   // Accepts both arrays and objects.
@@ -64,7 +66,7 @@
     // TIP: Here's an example of a function that needs to iterate, which we've
     // implemented for you. Instead of using a standard `for` loop, though,
     // it uses the iteration helper `each`, which you will need to write.
-    var result = -1;
+    let result = -1;
 
     _.each(array, function(item, index) {
       if (item === target && result === -1) {
@@ -77,16 +79,31 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
+
+    let filtered = [];
+    _.each(collection, (ele, index, array) => {
+      if (test(ele, index, array)) {
+        filtered.push(ele);
+      }
+    });
+    return filtered;
   };
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
+    return _.filter(collection, (ele) => { return !test(ele) });
   };
-
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
+    let unique = [];
+    for (let ele of array) {
+      if (!unique.includes(ele)) {
+        unique.push(ele);
+      }
+    }
+    return unique;
   };
 
 
