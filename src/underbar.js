@@ -318,8 +318,15 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    let random = [...array];
+    _.each(array, (ele, index) => {
+      let position = Math.floor(Math.random() * array.length);
+      let temp = random[index];
+      random[index] = random[position];
+      random[position] = temp;
+    });
+    return random;
   };
-
 
   /**
    * ADVANCED
