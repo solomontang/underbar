@@ -93,7 +93,7 @@
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
-    return _.filter(collection, (ele) => { return !test(ele) });
+    return _.filter(collection, (item) => !test(item));
   };
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
@@ -207,6 +207,8 @@
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
+    iterator = iterator || _.identity;
+    return !_.every(collection, (item) => !iterator(item));
     // TIP: There's a very clever way to re-use every() here.
   };
 
