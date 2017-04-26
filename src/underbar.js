@@ -51,7 +51,7 @@
   _.each = function(collection, iterator) {
     if (Array.isArray(collection)) {
       for (var i = 0; i < collection.length; i++) {
-        iterator(collection[i] ,i, collection);
+        iterator(collection[i], i, collection);
       }
     } else if (typeof collection === 'object') {
       for (var key in collection) {
@@ -153,24 +153,12 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-    let isArr = Array.isArray(collection);
-    let isObj = typeof collection === 'object';
-    let collCopy;
-    if (isArr) {
-      collCopy = [...collection];
-    } else if ( isObj) {
-      collCopy = Object.assign({}, collection);
-    }
+    let collCopy = Array.isArray(collection) ? [...collection] :
+      _.map(Object.keys(collection), item => collection[item]);
 
     if (accumulator === undefined) {
-      let firstEle = Object.keys(collCopy)[0];
-      accumulator = collCopy[firstEle];
-
-      if (isArr) {
-        collCopy.shift();
-      } else if (isObj) {
-        delete collCopy[firstEle];
-      }
+      accumulator = collCopy[0];
+      collCopy.shift();
     }
 
     _.each(collCopy, (item) => accumulator = iterator(accumulator, item));
@@ -231,12 +219,24 @@
   //   }, {
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
-  _.extend = function(obj) {
+  _.extend = function(obj,...restArgs) {
+    return _.reduce(restArgs, (destination, source) => {
+      _.each(source, (value, key) => destination[key] = source[key]);
+      return destination;
+    }, obj);
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
-  _.defaults = function(obj) {
+  _.defaults = function(obj,...restArgs) {
+    return _.reduce(restArgs, (destination, source) => {
+      _.each(source, (value, key) => {
+        if (!(destination.hasOwnProperty(key))) {
+          destination[key] = source[key];
+        }
+      });
+      return destination;
+    }, obj);
   };
 
 
@@ -279,7 +279,21 @@
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
+
   _.memoize = function(func) {
+    let prevResult = [];
+    let prevArgs = [];
+    return function() {
+      let position = prevArgs.indexOf(JSON.stringify(arguments));
+      if(position !== -1) {
+        return prevResult[position];
+      } else {
+        prevArgs.push(JSON.stringify(arguments));
+        let result = func.apply(this, arguments);
+        prevResult.push(result);
+        return result;
+      }
+    }
   };
 
   // Delays a function for the given number of milliseconds, and then calls
