@@ -153,15 +153,29 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-    let collCopy = [...collection];
-    if (accumulator === undefined) {
-      accumulator = collCopy[0];
-      collCopy.shift();
+    let isArr = Array.isArray(collection);
+    let isObj = typeof collection === 'object';
+    let collCopy;
+    if (isArr) {
+      collCopy = [...collection];
+    } else if ( isObj) {
+      collCopy = Object.assign({}, collection);
     }
-    _.each(collCopy, (ele) => accumulator = iterator(accumulator, ele));
+
+    if (accumulator === undefined) {
+      let firstEle = Object.keys(collCopy)[0];
+      accumulator = collCopy[firstEle];
+
+      if (isArr) {
+        collCopy.shift();
+      } else if (isObj) {
+        delete collCopy[firstEle];
+      }
+    }
+
+    _.each(collCopy, (item) => accumulator = iterator(accumulator, item));
     return accumulator;
   };
-
 
   //AssertionError: expected -3 to equal 0
 
@@ -180,6 +194,13 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
+    iterator = iterator || _.identity;
+    return _.reduce(collection, function (allPass, item) {
+      if (!allPass) {
+        return false;
+      }
+      return Boolean(iterator(item));
+    }, true);
     // TIP: Try re-using reduce() here.
   };
 
