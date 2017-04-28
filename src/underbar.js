@@ -154,18 +154,16 @@
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
     let collCopy = Array.isArray(collection) ? [...collection] :
-      _.map(Object.keys(collection), item => collection[item]);
+      Object.values(collection);
 
     if (accumulator === undefined) {
       accumulator = collCopy[0];
       collCopy.shift();
     }
 
-    _.each(collCopy, (item) => accumulator = iterator(accumulator, item));
+    _.each(collCopy, (value) => accumulator = iterator(accumulator, value));
     return accumulator;
   };
-
-  //AssertionError: expected -3 to equal 0
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
@@ -281,17 +279,14 @@
   // instead if possible.
 
   _.memoize = function(func) {
-    let prevResult = [];
-    let prevArgs = [];
+    let previous = {};
     return function() {
-      let position = prevArgs.indexOf(JSON.stringify(arguments));
-      if(position !== -1) {
-        return prevResult[position];
+      let argKey = JSON.stringify(arguments);
+      if(previous[argKey] !== undefined) {
+        return previous[argKey];
       } else {
-        prevArgs.push(JSON.stringify(arguments));
-        let result = func.apply(this, arguments);
-        prevResult.push(result);
-        return result;
+        previous[argKey] = func.apply(this, arguments);
+        return previous[argKey];
       }
     }
   };
@@ -307,7 +302,7 @@
   };
 
 
-  /**
+  /*
    * ADVANCED COLLECTION OPERATIONS
    * ==============================
    */
