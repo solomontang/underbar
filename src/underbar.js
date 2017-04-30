@@ -298,7 +298,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
-    setTimeout(...arguments);
+    var args = [].slice.call(arguments, 2);
+    return setTimeout(function() {
+      func.apply(this, args);
+    }, wait);
   };
 
 
@@ -334,16 +337,10 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
-    if (typeof functionOrKey === 'function') {
-      _.each (collection, (ele, index, collection) => {
-        collection[index] = functionOrKey.apply(ele, args);
-      });
-    } else if (typeof functionOrKey === 'string' ){
-      _.each (collection, (ele, index, collection) => {
-        collection[index] = ele[functionOrKey].apply(ele, args);
-      });
-    }
-    return collection;
+    return _.map(collection, function(ele, index, collection) {
+      //if functionOrKey is not a function, call method at ele[functionOrKey]
+      return (functionOrKey instanceof Function) ? functionOrKey.apply(ele, args) : ele[functionOrKey].apply(ele, args);
+    });
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -351,6 +348,10 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    var isFunction = iterator instanceof Function;
+    return collection.sort(function(a, b) {
+      return isFunction ? iterator(a) - iterator(b) : a[iterator] - b[iterator];
+    });
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -359,6 +360,14 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var longest = _.last(_.sortBy([...arguments], function(arg){
+      return arg.length;
+    }));
+    var zipArray = [];
+    for(var i = 0; i < longest.length; i++) {
+      zipArray.push(_.pluck(arguments, i));
+    }
+    return zipArray;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -366,16 +375,49 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    _.each(nestedArray, function(el) {
+        if (Array.isArray(el))
+            nestedArray = _.flatten([].concat.apply([], nestedArray));
+    });
+    return nestedArray;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    //pick shortest array
+    var args = [...arguments];
+    var first = args.shift();
+
+    var newArray = [];
+    //for _.EACH element in a shortest array
+    _.each(first, function(ele,index) {
+      var isIntersection = _.every(args, function(arr) {
+        return _.contains(arr, first[index]);
+      });
+      if(isIntersection){
+        newArray.push(first[index]);
+      }
+    });
+    return newArray;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    var args = [...arguments];
+    var first = args.shift();
+    var diff = [];
+
+    _.each(first, function(ele, index) {
+      var isDifference = _.every(args, function(arr) {
+        return !_.contains(arr, first[index]);
+      });
+      if (isDifference) {
+        diff.push(first[index]);
+      }
+    });
+    return diff;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
@@ -384,5 +426,15 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+    var elapse = 0;
+    var lastTime = wait;
+    var increase = function() { elapse++ };
+    setInterval(increase, 1);
+    return function() {
+      if (elapse - lastTime >= wait || elapse === 0) {
+        lastTime = elapse;
+        func.apply(this, arguments);
+      }
+    }
   };
 }());
