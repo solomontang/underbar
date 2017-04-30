@@ -385,39 +385,25 @@
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
-    //pick shortest array
-    var args = [...arguments];
-    var first = args.shift();
-
-    var newArray = [];
-    //for _.EACH element in a shortest array
-    _.each(first, function(ele,index) {
-      var isIntersection = _.every(args, function(arr) {
-        return _.contains(arr, first[index]);
+    var restArgs = [...arguments];
+    var first = restArgs.shift();
+    return _.filter(first, function(ele) {
+      return _.every(restArgs, function(item) {
+        return _.contains(item, ele);
       });
-      if(isIntersection){
-        newArray.push(first[index]);
-      }
     });
-    return newArray;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
-  _.difference = function(array) {
-    var args = [...arguments];
-    var first = args.shift();
-    var diff = [];
-
-    _.each(first, function(ele, index) {
-      var isDifference = _.every(args, function(arr) {
-        return !_.contains(arr, first[index]);
+  _.difference = function() {
+    var restArgs = [...arguments];
+    var first = restArgs.shift();
+    return _.reject(first, function(ele) {
+      return _.some(restArgs, function(item) {
+        return _.contains(item, ele);
       });
-      if (isDifference) {
-        diff.push(first[index]);
-      }
     });
-    return diff;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
