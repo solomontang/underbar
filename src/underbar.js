@@ -157,7 +157,7 @@
       Object.values(collection);
 
     if (accumulator === undefined) {
-      accumulator = collCopy[0];
+      accumulator = _.first(collCopy);
       collCopy.shift();
     }
 
@@ -170,10 +170,7 @@
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
     return _.reduce(collection, function(wasFound, item) {
-      if (wasFound) {
-        return true;
-      }
-      return item === target;
+      return wasFound ? true : item === target;
     }, false);
   };
 
@@ -182,10 +179,7 @@
   _.every = function(collection, iterator) {
     iterator = iterator || _.identity;
     return _.reduce(collection, function (allPass, item) {
-      if (!allPass) {
-        return false;
-      }
-      return Boolean(iterator(item));
+      return !allPass ? false : Boolean(iterator(item));
     }, true);
     // TIP: Try re-using reduce() here.
   };
@@ -279,15 +273,10 @@
   // instead if possible.
 
   _.memoize = function(func) {
-    let previous = {};
+    let cache = {};
     return function() {
       let argKey = JSON.stringify(arguments);
-      if(previous[argKey] !== undefined) {
-        return previous[argKey];
-      } else {
-        previous[argKey] = func.apply(this, arguments);
-        return previous[argKey];
-      }
+      return cache[argKey] = argKey in cache ? cache[argKey] : func.apply(this, arguments);
     }
   };
 
@@ -337,9 +326,10 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
-    return _.map(collection, function(ele, index, collection) {
+    return _.map(collection, function(ele) {
       //if functionOrKey is not a function, call method at ele[functionOrKey]
-      return (functionOrKey instanceof Function) ? functionOrKey.apply(ele, args) : ele[functionOrKey].apply(ele, args);
+      return (functionOrKey instanceof Function) ?
+        functionOrKey.apply(ele, args) : ele[functionOrKey].apply(ele, args);
     });
   };
 
