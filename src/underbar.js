@@ -403,7 +403,7 @@
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
     var elapse = 0;
-    var lastTime = wait;
+    var lastTime = 0;
     var increase = function() { elapse++ };
     setInterval(increase, 1);
     return function() {
