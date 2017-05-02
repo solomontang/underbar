@@ -81,8 +81,8 @@
   _.filter = function(collection, test) {
 
     let filtered = [];
-    _.each(collection, (ele, index, array) => {
-      if (test(ele, index, array)) {
+    _.each(collection, function(ele) {
+      if (test.apply(this, arguments)) {
         filtered.push(ele);
       }
     });
@@ -354,11 +354,9 @@
   _.zip = function() {
     var args = [...arguments];
     var longest = _.last(_.sortBy([...arguments],'length'));
-    var zipped = _.map(longest, function(value, key) {
+    return _.map(longest, function(value, key) {
       return _.pluck(args, key);
     });
-    console.log(JSON.stringify(zipped));
-    return zipped;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
