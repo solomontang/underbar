@@ -97,21 +97,23 @@
   };
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
-    let unique = [];
-    for (let ele of array) {
-      if (!unique.includes(ele)) {
-        unique.push(ele);
+    var uniques = [];
+    _.each(array, function(value, index) {
+      if(!uniques.includes(value)) {
+        uniques.push(value);
       }
-    }
-    return unique;
+    });
+    return uniques;
   };
 
 
   // Return the results of applying an iterator to each element.
   _.map = function(collection, iterator) {
-    let arr = [];
-    _.each(collection, (ele) => arr.push(iterator(ele)));
-    return arr;
+    var results = [];
+    _.each(collection, function() {
+      results.push(iterator.apply(this, arguments))
+    })
+    return results;
   };
 
   /*
@@ -350,14 +352,13 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
-    var longest = _.last(_.sortBy([...arguments], function(arg){
-      return arg.length;
-    }));
-    var zipArray = [];
-    for(var i = 0; i < longest.length; i++) {
-      zipArray.push(_.pluck(arguments, i));
-    }
-    return zipArray;
+    var args = [...arguments];
+    var longest = _.last(_.sortBy([...arguments],'length'));
+    var zipped = _.map(longest, function(value, key) {
+      return _.pluck(args, key);
+    });
+    console.log(JSON.stringify(zipped));
+    return zipped;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
